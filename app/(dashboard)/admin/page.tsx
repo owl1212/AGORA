@@ -28,17 +28,17 @@ import {
 } from "@/components/ui/table";
 
 const USERS = [
-  { name: "C. Mulenga", role: "Admin / MLRO", email: "c.mulenga@zice.com", status: "Active", lastActive: "2 mins ago" },
-  { name: "S. Banda", role: "Compliance Officer", email: "s.banda@zice.com", status: "Active", lastActive: "1 hour ago" },
-  { name: "M. Zulu", role: "Senior Auditor", email: "m.zulu@zice.com", status: "Inactive", lastActive: "3 days ago" },
-  { name: "K. Phiri", role: "Data Analyst", email: "k.phiri@zice.com", status: "Active", lastActive: "45 mins ago" },
+  { name: "C. Mulenga", role: "Admin / MLRO", email: "c.mulenga@amz.com.zm", status: "Active", lastActive: "2 mins ago" },
+  { name: "S. Banda", role: "Compliance Officer", email: "s.banda@amz.com.zm", status: "Active", lastActive: "1 hour ago" },
+  { name: "M. Zulu", role: "Senior Auditor", email: "m.zulu@amz.com.zm", status: "Inactive", lastActive: "3 days ago" },
+  { name: "K. Phiri", role: "Data Analyst", email: "k.phiri@amz.com.zm", status: "Active", lastActive: "45 mins ago" },
 ];
 
 const AUDIT_LOG = [
-  { action: "Portfolio Rescore", user: "C. Mulenga", time: "2026-04-14 13:45:12", category: "System" },
-  { action: "User Added: K. Phiri", user: "C. Mulenga", time: "2026-04-14 11:20:05", category: "Security" },
-  { action: "Risk Weight Modified: KYC", user: "C. Mulenga", time: "2026-04-14 09:12:44", category: "Config" },
-  { action: "STR Export: Q1 FRM", user: "S. Banda", time: "2026-04-13 16:30:11", category: "Export" },
+  { action: "Portfolio Rescore", user: "C. Mulenga", time: "2026-04-27 13:45:12", category: "System" },
+  { action: "User Added: K. Phiri", user: "C. Mulenga", time: "2026-04-27 11:20:05", category: "Security" },
+  { action: "Risk Weight Modified: KYC", user: "C. Mulenga", time: "2026-04-27 09:12:44", category: "Config" },
+  { action: "STR Export: Q1 FRM", user: "S. Banda", time: "2026-04-27 16:30:11", category: "Export" },
 ];
 
 export default function AdminPage() {

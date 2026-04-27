@@ -1,160 +1,213 @@
 "use client";
 
 import { useState } from "react";
-import { 
-  Radar, 
-  RadarChart, 
-  PolarGrid, 
-  PolarAngleAxis, 
-  PolarRadiusAxis, 
-  ResponsiveContainer 
-} from "recharts";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
-import { Play, RotateCcw, ShieldAlert, TrendingDown, Info } from "lucide-react";
+import { Play, RotateCcw, ShieldAlert, TrendingDown, Map as MapIcon, Users } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-const initialData = [
-  { subject: 'KYC Score', A: 120, fullMark: 150 },
-  { subject: 'Jurisdiction', A: 98, fullMark: 150 },
-  { subject: 'Transaction Vol', A: 86, fullMark: 150 },
-  { subject: 'PEP Match', A: 99, fullMark: 150 },
-  { subject: 'Account Age', A: 85, fullMark: 150 },
-  { subject: 'Activity Freq', A: 65, fullMark: 150 },
+// Simplified abstract SVG paths for Zambia's 10 provinces to act as a placeholder map
+const zambiaProvinces = [
+  { id: "north-western", name: "North-Western", d: "M20,40 L60,30 L80,70 L40,90 Z", cx: 45, cy: 55 },
+  { id: "copperbelt", name: "Copperbelt", d: "M60,30 L90,40 L100,70 L80,70 Z", cx: 80, cy: 50 },
+  { id: "luapula", name: "Luapula", d: "M90,10 L120,20 L110,60 L90,40 Z", cx: 100, cy: 30 },
+  { id: "northern", name: "Northern", d: "M120,0 L180,20 L160,60 L110,60 L120,20 Z", cx: 140, cy: 30 },
+  { id: "muchinga", name: "Muchinga", d: "M160,60 L180,20 L210,40 L180,100 L130,80 Z", cx: 175, cy: 60 },
+  { id: "eastern", name: "Eastern", d: "M180,100 L210,40 L250,90 L200,140 Z", cx: 215, cy: 90 },
+  { id: "central", name: "Central", d: "M80,70 L130,80 L180,100 L160,130 L100,120 Z", cx: 130, cy: 100 },
+  { id: "lusaka", name: "Lusaka", d: "M140,125 L160,130 L180,160 L130,150 Z", cx: 155, cy: 140 },
+  { id: "western", name: "Western", d: "M10,90 L40,90 L80,140 L50,180 L0,150 Z", cx: 40, cy: 130 },
+  { id: "southern", name: "Southern", d: "M80,140 L100,120 L130,150 L180,160 L120,200 L60,180 Z", cx: 110, cy: 160 },
 ];
 
+const mockData = zambiaProvinces.map(p => ({
+  ...p,
+  activeLoans: Math.floor(Math.random() * 5000) + 1000,
+  overdueLoans: Math.floor(Math.random() * 500) + 50,
+  missingKYC: Math.floor(Math.random() * 300) + 20,
+  branches: [
+    { name: `${p.name} Main Branch`, officer: `Officer ${Math.floor(Math.random() * 100)}` },
+    { name: `${p.name} Rural Hub`, officer: `Officer ${Math.floor(Math.random() * 100)}` }
+  ]
+}));
+
 export default function RiskAssessmentPage() {
-  const [data, setData] = useState(initialData);
-  const [isRescoring, setIsRescoring] = useState(false);
-  const [success, setSuccess] = useState(false);
-
-  const handleSliderChange = (index: number, value: number[]) => {
-    const newData = [...data];
-    newData[index].A = value[0];
-    setData(newData);
+  const [riskType, setRiskType] = useState<'financial' | 'compliance'>('financial');
+  const [selectedProvince, setSelectedProvince] = useState<string | null>(null);
+  
+  const getRiskScore = (provinceId: string) => {
+    const data = mockData.find(d => d.id === provinceId);
+    if (!data) return 0;
+    if (riskType === 'financial') {
+      return data.overdueLoans / data.activeLoans; // PAR
+    } else {
+      return data.missingKYC / data.activeLoans; // Compliance risk ratio
+    }
   };
 
-  const handleRescore = () => {
-    setIsRescoring(true);
-    setTimeout(() => {
-      setIsRescoring(false);
-      setSuccess(true);
-      setTimeout(() => setSuccess(false), 3000);
-    }, 2000);
+  const getColor = (score: number) => {
+    // Score range is roughly 0 to 0.15 for these random numbers. Let's map it to a heatmap color.
+    // Low risk: Green, Medium: Yellow/Orange, High: Red
+    const normalized = Math.min(score / 0.15, 1);
+    const hue = (1 - normalized) * 120; // 120 is green, 0 is red
+    return `hsl(${hue}, 70%, 50%)`;
   };
 
-  const resetValues = () => {
-    setData(initialData);
-  };
+  const activeData = selectedProvince ? mockData.find(d => d.id === selectedProvince) : null;
 
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Risk Assessment</h1>
-          <p className="text-muted-foreground">Adjust system-wide risk parameters and simulate portfolio re-scoring.</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <Button variant="outline" onClick={resetValues} className="gap-2">
-            <RotateCcw className="w-4 h-4" /> Reset
-          </Button>
-          <Button 
-            disabled={isRescoring} 
-            onClick={handleRescore} 
-            className="gap-2 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20"
-          >
-            {isRescoring ? (
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-              >
-                <RotateCcw className="w-4 h-4" />
-              </motion.div>
-            ) : <Play className="w-4 h-4" />}
-            Run Portfolio Re-scoring
-          </Button>
+          <h1 className="text-3xl font-bold tracking-tight">Geographic Risk Assessment</h1>
+          <p className="text-muted-foreground mt-1">Visualize portfolio health and compliance metrics across Zambia.</p>
         </div>
       </div>
 
-      <AnimatePresence>
-        {success && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden"
-          >
-            <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 p-4 rounded-xl flex items-center gap-3">
-              <ShieldAlert className="w-5 h-5" />
-              <span className="font-medium text-sm">Portfolio re-scoring completed successfully. 12,402 profiles updated.</span>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left: Controls */}
-        <Card className="lg:col-span-5 bg-card/50 backdrop-blur-sm border-border">
-          <CardHeader>
-            <CardTitle>Risk Parameters</CardTitle>
-            <CardDescription>Calibrate the weight of each assessment vector</CardDescription>
+        <Card className="lg:col-span-8 bg-card/50 backdrop-blur-sm border-border">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <div>
+              <CardTitle>Zambia Heatmap</CardTitle>
+              <CardDescription>Select a province to view regional data</CardDescription>
+            </div>
+            <div className="flex items-center gap-2 bg-muted p-1 rounded-md">
+              <Button 
+                variant={riskType === 'financial' ? 'default' : 'ghost'} 
+                size="sm"
+                onClick={() => setRiskType('financial')}
+                className="text-xs"
+              >
+                Financial Risk (PAR)
+              </Button>
+              <Button 
+                variant={riskType === 'compliance' ? 'default' : 'ghost'} 
+                size="sm"
+                onClick={() => setRiskType('compliance')}
+                className="text-xs"
+              >
+                Compliance Risk
+              </Button>
+            </div>
           </CardHeader>
-          <CardContent className="space-y-8">
-            {data.map((item, index) => (
-              <div key={item.subject} className="space-y-4">
-                <div className="flex justify-between items-center text-sm">
-                  <span className="font-medium flex items-center gap-2">
-                    {item.subject}
-                    <Info className="w-3.5 h-3.5 text-muted-foreground cursor-help" />
-                  </span>
-                  <Badge variant="secondary" className="font-mono">
-                    {item.A}%
-                  </Badge>
+          <CardContent className="flex justify-center items-center py-8">
+            <div className="relative w-full max-w-[600px] aspect-[1.2]">
+              <svg viewBox="0 0 260 220" className="w-full h-full drop-shadow-xl">
+                {mockData.map((prov) => {
+                  const score = getRiskScore(prov.id);
+                  const isSelected = selectedProvince === prov.id;
+                  return (
+                    <g key={prov.id} onClick={() => setSelectedProvince(prov.id)} className="cursor-pointer group">
+                      <path 
+                        d={prov.d} 
+                        fill={getColor(score)} 
+                        stroke={isSelected ? "white" : "#2a2a2a"}
+                        strokeWidth={isSelected ? 2.5 : 1}
+                        className="transition-all duration-300 hover:opacity-80"
+                      />
+                      <text 
+                        x={prov.cx} 
+                        y={prov.cy} 
+                        fontSize="6" 
+                        fill="white" 
+                        textAnchor="middle" 
+                        fontWeight={isSelected ? "bold" : "normal"}
+                        className="pointer-events-none drop-shadow-md"
+                      >
+                        {prov.name}
+                      </text>
+                      <text 
+                        x={prov.cx} 
+                        y={prov.cy + 8} 
+                        fontSize="5" 
+                        fill="rgba(255,255,255,0.8)" 
+                        textAnchor="middle" 
+                        className="pointer-events-none"
+                      >
+                        {(score * 100).toFixed(1)}%
+                      </text>
+                    </g>
+                  );
+                })}
+              </svg>
+
+              {/* Legend */}
+              <div className="absolute bottom-4 left-4 bg-background/80 backdrop-blur p-3 rounded-lg border border-border text-xs">
+                <p className="font-semibold mb-2">Risk Intensity</p>
+                <div className="flex items-center gap-2">
+                  <div className="w-24 h-2 rounded-full bg-gradient-to-r from-emerald-500 via-yellow-500 to-red-500" />
+                  <span className="text-muted-foreground">High</span>
                 </div>
-                <Slider
-                  value={[item.A]}
-                  max={150}
-                  step={1}
-                  onValueChange={(val) => handleSliderChange(index, val)}
-                  className="py-2"
-                />
               </div>
-            ))}
+            </div>
           </CardContent>
         </Card>
 
-        {/* Right: Visualization */}
-        <div className="lg:col-span-7 space-y-6">
-          <Card className="h-full bg-card/50 backdrop-blur-sm border-border overflow-hidden">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <div>
-                <CardTitle>Portfolio Risk Map</CardTitle>
-                <CardDescription>Aggregate profile of current assessments</CardDescription>
-              </div>
-              <div className="text-right">
-                <div className="text-2xl font-bold text-primary">72.4</div>
-                <div className="text-xs text-muted-foreground flex items-center gap-1 justify-end">
-                  <TrendingDown className="w-3 h-3 text-emerald-500" /> -4.2% vs last rescore
-                </div>
-              </div>
+        <div className="lg:col-span-4 space-y-6">
+          <Card className="h-full">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MapIcon className="w-5 h-5 text-primary" />
+                {activeData ? activeData.name : 'Select a Region'}
+              </CardTitle>
+              <CardDescription>
+                {activeData ? 'Regional performance metrics' : 'Click a province on the map'}
+              </CardDescription>
             </CardHeader>
-            <CardContent className="flex items-center justify-center h-[500px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <RadarChart cx="50%" cy="50%" outerRadius="80%" data={data}>
-                  <PolarGrid stroke="#333" />
-                  <PolarAngleAxis dataKey="subject" tick={{ fill: '#888', fontSize: 12 }} />
-                  <PolarRadiusAxis angle={30} domain={[0, 150]} tick={false} axisLine={false} />
-                  <Radar
-                    name="Risk Profile"
-                    dataKey="A"
-                    stroke="hsl(var(--primary))"
-                    fill="hsl(var(--primary))"
-                    fillOpacity={0.6}
-                  />
-                </RadarChart>
-              </ResponsiveContainer>
+            <CardContent>
+              <AnimatePresence mode="wait">
+                {activeData ? (
+                  <motion.div 
+                    key={activeData.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="space-y-6"
+                  >
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="p-4 bg-muted/50 rounded-lg">
+                        <p className="text-xs text-muted-foreground mb-1">Active Loans</p>
+                        <p className="text-xl font-bold">{activeData.activeLoans.toLocaleString()}</p>
+                      </div>
+                      <div className="p-4 bg-muted/50 rounded-lg">
+                        <p className="text-xs text-muted-foreground mb-1">Risk Score</p>
+                        <p className={`text-xl font-bold ${getRiskScore(activeData.id) > 0.1 ? 'text-destructive' : 'text-emerald-500'}`}>
+                          {(getRiskScore(activeData.id) * 100).toFixed(1)}%
+                        </p>
+                      </div>
+                      <div className="p-4 bg-muted/50 rounded-lg">
+                        <p className="text-xs text-muted-foreground mb-1">Overdue Loans</p>
+                        <p className="text-xl font-bold">{activeData.overdueLoans.toLocaleString()}</p>
+                      </div>
+                      <div className="p-4 bg-muted/50 rounded-lg">
+                        <p className="text-xs text-muted-foreground mb-1">Missing KYC</p>
+                        <p className="text-xl font-bold text-amber-500">{activeData.missingKYC.toLocaleString()}</p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <h4 className="font-semibold flex items-center gap-2">
+                        <Users className="w-4 h-4" /> Active Branches & Officers
+                      </h4>
+                      {activeData.branches.map((b, i) => (
+                        <div key={i} className="flex justify-between items-center p-3 border border-border rounded-lg bg-card hover:bg-muted/50 transition-colors">
+                          <div>
+                            <p className="font-medium text-sm">{b.name}</p>
+                            <p className="text-xs text-muted-foreground">{b.officer}</p>
+                          </div>
+                          <Badge variant="outline">View</Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
+                ) : (
+                  <div className="h-48 flex flex-col items-center justify-center text-muted-foreground text-center px-4">
+                    <MapIcon className="w-12 h-12 mb-4 opacity-20" />
+                    <p className="text-sm">Select a province on the heatmap to view branch-level risk exposure and officer performance.</p>
+                  </div>
+                )}
+              </AnimatePresence>
             </CardContent>
           </Card>
         </div>

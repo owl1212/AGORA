@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { 
   HandCoins, 
   Building2, 
@@ -11,7 +12,9 @@ import {
   Search,
   Filter,
   Download,
-  MoreHorizontal
+  MoreHorizontal,
+  Sprout,
+  AlertTriangle
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -26,6 +29,8 @@ import {
   TableRow 
 } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
+import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, Cell } from "recharts";
+import { motion, AnimatePresence } from "framer-motion";
 
 const ENTITIES = [
   { name: "First Micro Capital", sector: "Microfinance", risk: "Low", capital: "12.4M", compliance: 98, status: "Compliant" },
@@ -35,7 +40,41 @@ const ENTITIES = [
   { name: "Quick Cash Micro", sector: "Microfinance", risk: "Medium", capital: "2.8M", compliance: 78, status: "Pending Audit" },
 ];
 
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
 export default function NonDepositPage() {
+  const [template, setTemplate] = useState('standard');
+  const [cropType, setCropType] = useState('maize');
+
+  // Generate cashflow based on crop and template
+  const getCashflowData = () => {
+    if (template !== 'agro-seasonal') {
+      return MONTHS.map(m => ({ month: m, cashflow: 100, isGrowing: false }));
+    }
+    
+    if (cropType === 'maize') {
+      // Maize in Zambia: Plant Nov/Dec, Grow Jan-Apr, Harvest May-Jul
+      const growing = ['Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr'];
+      const harvest = ['May', 'Jun', 'Jul'];
+      return MONTHS.map(m => ({
+        month: m,
+        cashflow: harvest.includes(m) ? 100 : growing.includes(m) ? 0 : 20,
+        isGrowing: growing.includes(m)
+      }));
+    } else {
+      // Groundnuts: Plant Dec, Grow Jan-Mar, Harvest Apr-May
+      const growing = ['Dec', 'Jan', 'Feb', 'Mar'];
+      const harvest = ['Apr', 'May'];
+      return MONTHS.map(m => ({
+        month: m,
+        cashflow: harvest.includes(m) ? 100 : growing.includes(m) ? 0 : 30,
+        isGrowing: growing.includes(m)
+      }));
+    }
+  };
+
+  const cashflowData = getCashflowData();
+
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
       {/* Header Section */}
@@ -186,6 +225,84 @@ export default function NonDepositPage() {
           </Card>
         </div>
       </div>
+
+      {/* Loan Product Configuration - Agro-Sync */}
+      <Card className="border-border">
+        <CardHeader>
+          <div className="flex items-center gap-2 text-primary">
+            <Sprout className="w-5 h-5" />
+            <CardTitle>Loan Product Configuration (Agro-Sync)</CardTitle>
+          </div>
+          <CardDescription>Configure adaptive repayment templates based on agricultural seasonality.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div className="lg:col-span-4 space-y-6">
+              <div className="space-y-2">
+                <label className="text-sm font-semibold">Repayment Template</label>
+                <select 
+                  className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm outline-none focus:ring-1 focus:ring-primary"
+                  value={template}
+                  onChange={(e) => setTemplate(e.target.value)}
+                >
+                  <option value="standard">Standard (Equal Monthly Installments)</option>
+                  <option value="agro-seasonal">Agro-Seasonal (Synchronized)</option>
+                  <option value="bullet">Bullet Repayment</option>
+                </select>
+              </div>
+
+              <AnimatePresence>
+                {template === 'agro-seasonal' && (
+                  <motion.div 
+                    initial={{ opacity: 0, height: 0 }} 
+                    animate={{ opacity: 1, height: 'auto' }} 
+                    exit={{ opacity: 0, height: 0 }}
+                    className="space-y-4"
+                  >
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold">Crop Type</label>
+                      <select 
+                        className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm outline-none focus:ring-1 focus:ring-primary"
+                        value={cropType}
+                        onChange={(e) => setCropType(e.target.value)}
+                      >
+                        <option value="maize">Maize</option>
+                        <option value="groundnuts">Groundnuts</option>
+                      </select>
+                    </div>
+
+                    <div className="bg-amber-500/10 border border-amber-500/30 p-4 rounded-lg flex items-start gap-3 text-amber-600 dark:text-amber-500">
+                      <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
+                      <div className="text-sm">
+                        <strong>Alert Suppression Active</strong>
+                        <p className="mt-1 opacity-90">System alerts for missed payments and arrears tracking are automatically suppressed during the growing season (0% expected cashflow) for this template.</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            <div className="lg:col-span-8">
+              <h4 className="text-sm font-semibold mb-4">Expected Cashflow & Repayment Visualization</h4>
+              <div className="h-64 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={cashflowData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--muted-foreground)' }} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--muted-foreground)' }} tickFormatter={(val) => `${val}%`} />
+                    <RechartsTooltip cursor={{ fill: 'var(--muted)' }} contentStyle={{ borderRadius: '8px', border: '1px solid var(--border)' }} />
+                    <Bar dataKey="cashflow" radius={[4, 4, 0, 0]}>
+                      {cashflowData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.isGrowing ? 'var(--muted)' : 'hsl(var(--primary))'} opacity={entry.isGrowing ? 0.5 : 1} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

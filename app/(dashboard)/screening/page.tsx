@@ -83,7 +83,7 @@ export default function ScreeningPage() {
             className="flex flex-col items-center justify-center py-12"
           >
             <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
-            <p className="text-muted-foreground animate-pulse">Querying global watchlists through ZICE intelligence network...</p>
+            <p className="text-muted-foreground animate-pulse">Querying global watchlists through AMZ intelligence network...</p>
           </motion.div>
         )}
 

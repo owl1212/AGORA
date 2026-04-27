@@ -6,8 +6,8 @@ import { ThemeProvider } from "@/components/theme-provider";
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
-  title: "ZICE | Zambia Integrated Compliance Ecosystem",
-  description: "Modular AML/CFT platform for financial institutions in Zambia",
+  title: "AMZ | Agora Microfinance Zambia",
+  description: "Agora Microfinance Zambia AML/CFT Compliance Platform",
 };
 
 export default function RootLayout({

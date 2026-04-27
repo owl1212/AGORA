@@ -1,13 +1,30 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ShieldAlert, Shield } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
+
+const images = [
+  "/images/login/slide1.jpg",
+  "/images/login/slide2.jpg",
+  "/images/login/slide3.jpg",
+  "/images/login/slide4.jpg",
+];
 
 export default function LoginPage() {
   const router = useRouter();
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % images.length);
+    }, 2500);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -15,23 +32,31 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen w-full flex bg-[#110E17]">
+    <div className="min-h-screen w-full flex bg-[#373435]">
       {/* Left side - Dark & Abstract */}
-      <div className="hidden lg:flex w-1/2 relative overflow-hidden bg-[#0A080C] items-end p-12">
-        {/* Abstract background simulation */}
-        <div className="absolute inset-0 z-0">
-          <div className="absolute top-0 left-0 w-full h-full opacity-20">
-            <svg viewBox="0 0 800 1000" preserveAspectRatio="none" className="w-full h-full text-white/5" fill="currentColor">
-              <path d="M0,0 L800,0 L800,1000 L0,1000 Z" fill="none" />
-              <path d="M-100,500 Q300,100 800,900" stroke="currentColor" strokeWidth="2" fill="none" className="opacity-50" />
-              <path d="M-100,600 Q300,200 800,1000" stroke="currentColor" strokeWidth="4" fill="none" className="opacity-30" />
-              <path d="M-100,700 Q300,300 800,1100" stroke="currentColor" strokeWidth="8" fill="none" className="opacity-10" />
-              <path d="M-100,300 Q400,-100 900,700" stroke="currentColor" strokeWidth="1" fill="none" className="opacity-40" />
-              <path d="M-100,400 Q400,0 900,800" stroke="currentColor" strokeWidth="3" fill="none" className="opacity-20" />
-            </svg>
-          </div>
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0A080C] 80% to-transparent"></div>
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0A080C] 0% via-transparent to-black/30"></div>
+      <div className="hidden lg:flex w-1/2 relative overflow-hidden bg-[#1A1C1A] items-end p-12">
+        {/* Slideshow background */}
+        <div className="absolute inset-0 z-0 bg-[#1A1C1A]">
+          <AnimatePresence>
+            <motion.div
+              key={currentImageIndex}
+              initial={{ opacity: 0, scale: 1.05 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 1 }}
+              className="absolute inset-0"
+            >
+              <Image
+                src={images[currentImageIndex]}
+                alt="Login background slide"
+                fill
+                className="object-cover"
+                priority
+              />
+            </motion.div>
+          </AnimatePresence>
+          <div className="absolute inset-0 bg-black/40 z-10"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-[#1A1C1A] via-[#1A1C1A]/20 to-transparent z-10"></div>
         </div>
 
         {/* Top left badge */}
@@ -49,13 +74,10 @@ export default function LoginPage() {
 
         {/* Bottom left branding */}
         <div className="z-10 w-full flex justify-between items-end">
-          <div className="flex items-center gap-3">
-            <div className="bg-[#D5FB3D] text-[#110E17] p-2 rounded-xl">
-              <ShieldAlert className="w-8 h-8" />
-            </div>
-            <span className="font-bold text-3xl tracking-tight text-white">ZICE</span>
+          <div className="py-2">
+            <span className="text-lg font-bold text-white tracking-wide">AGORA MICROFINANCE ZAMBIA</span>
           </div>
-          <span className="text-xs text-white/40">© ZICE Integration 2024</span>
+          <span className="text-xs text-white/40">© Agora Microfinance Zambia 2026</span>
         </div>
       </div>
 
@@ -63,9 +85,16 @@ export default function LoginPage() {
       <div className="w-full lg:w-1/2 bg-white flex flex-col justify-center px-8 sm:px-16 lg:px-24">
         <div className="w-full max-w-md mx-auto">
           {/* Top text */}
-          <div className="mb-16">
-            <p className="text-[#110E17] font-semibold text-sm">Zambia Integrated Compliance Ecosystem™</p>
-            <p className="text-[#7E84A3] text-sm">RegTech Adjudication Platform</p>
+          <div className="mt-16 mb-10 flex flex-col items-center text-center">
+            <Image 
+              src="/amz-logo.png" 
+              alt="AMZ Logo" 
+              width={220} 
+              height={70} 
+              className="object-contain mb-4"
+              priority
+            />
+            <p className="text-[#606760] text-sm">Financial Inclusion & Compliance Platform</p>
           </div>
 
           <motion.div
@@ -73,30 +102,30 @@ export default function LoginPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <h1 className="text-[40px] leading-[1.1] font-bold text-[#110E17] tracking-tight mb-12">
+            <h1 className="text-[40px] leading-[1.1] font-bold text-[#373435] tracking-tight mb-12 text-center">
               Welcome, login to <br /> your account.
             </h1>
 
             <form onSubmit={handleLogin} className="space-y-6">
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-[#110E17] ml-2 block">
+                <label className="text-sm font-semibold text-[#373435] ml-2 block">
                   Username or Email Address:
                 </label>
                 <input 
                   type="text" 
-                  className="w-full h-12 rounded-full bg-[#F2F6FA] border-0 px-6 text-[#110E17] placeholder:text-[#B6BAD0] focus:ring-2 focus:ring-[#D5FB3D] outline-none transition-all"
+                  className="w-full h-12 rounded-full bg-[#F1F3F1] border-0 px-6 text-[#373435] placeholder:text-[#9CA39C] focus:ring-2 focus:ring-[#046939] outline-none transition-all"
                   placeholder="name@domain.com"
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-[#110E17] ml-2 block">
+                <label className="text-sm font-semibold text-[#373435] ml-2 block">
                   Password:
                 </label>
                 <input 
                   type="password" 
-                  className="w-full h-12 rounded-full bg-[#F2F6FA] border-0 px-6 text-[#110E17] placeholder:text-[#B6BAD0] focus:ring-2 focus:ring-[#D5FB3D] outline-none transition-all"
+                  className="w-full h-12 rounded-full bg-[#F1F3F1] border-0 px-6 text-[#373435] placeholder:text-[#9CA39C] focus:ring-2 focus:ring-[#046939] outline-none transition-all"
                   placeholder="Your Password"
                   required
                 />
@@ -105,12 +134,12 @@ export default function LoginPage() {
               <div className="flex items-center justify-between pt-4">
                 <Button 
                   type="submit" 
-                  className="rounded-full bg-[#110E17] hover:bg-[#110E17]/90 text-white h-12 px-8 font-medium text-base transition-transform hover:scale-105"
+                  className="rounded-full bg-[#373435] hover:bg-[#373435]/90 text-white h-12 px-8 font-medium text-base transition-transform hover:scale-105"
                 >
                   Sign In Here
                 </Button>
 
-                <Link href="#" className="text-sm font-medium text-[#110E17] hover:underline underline-offset-4">
+                <Link href="#" className="text-sm font-medium text-[#373435] hover:underline underline-offset-4">
                   Lost your password?
                 </Link>
               </div>
@@ -118,7 +147,7 @@ export default function LoginPage() {
           </motion.div>
 
           <div className="mt-32">
-            <p className="text-xs text-[#B6BAD0]">www.ziceplatform.zm</p>
+            <p className="text-xs text-[#9CA39C]">www.amz.com.zm</p>
           </div>
         </div>
       </div>
