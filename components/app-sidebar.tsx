@@ -23,6 +23,7 @@ const items = [
   { title: "Alerts Queue", url: "/alerts", icon: AlertOctagon },
   { title: "Case Management", url: "/cases", icon: FileSearch },
   { title: "Customer 360", url: "/customers", icon: Users },
+  { title: "Non-Deposit Taking", url: "/non-deposit", icon: HandCoins },
   { title: "Risk Assessment", url: "/risk-assessment", icon: TrendingUp },
   { title: "Watchlist Screening", url: "/screening", icon: Shield },
   { title: "STR Reports", url: "/reports", icon: FileText },
